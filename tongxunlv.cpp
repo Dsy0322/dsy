@@ -1,263 +1,308 @@
-//项目名称： 简单的通讯录管理程序
-//项目功能： 实现通讯录的增删改查功能
-
 #include <iostream>
+#include <cstring>   // 要用strcmp比较字符串，必须加这个头文件
 using namespace std;
+
+//定义联系人生日结构体
+struct Birthday //联系人生日
+{
+	int year; //年
+	int month; //月
+	int day; //日
+};
 
 //定义联系人结构体
 struct Contact
 {
-        char name[50]; //联系人姓名
-        char phone[12]; //联系人电话
-        struct Birthday //联系人生日
-        {
-                int year; //年
-                int month; //月
-                int day; //日
-        } birthday;
-        int age; //联系人年龄
+	char name[50]; //联系人姓名
+	char phone[12]; //联系人电话
+	Birthday birthday; //联系人生日
+	int age; //联系人年龄
 };
 
 //定义通讯录结点结构体
 struct Node
 {
-        Contact data; //联系人信息
-        Node* next; //指向下一个结点的指针
+	Contact data; //联系人信息
+	Node* next; //指向下一个结点的指针
 };
 
-/*函数功能： 初始化一个空的通讯录链表
-* 函数形参： 无
-* 函数返回值： 返回一个空的通讯录链表头指针，Node*类型
-*/
+//在此区域完成通讯录功能的函数实现
+
+// 函数1：初始化链表，创建头结点，返回头结点地址
 Node* InitAddressBook()
 {
-        Node* head = new Node; //创建一个新的结点
-        if(head == NULL) //判断是否创建成功
-                cout << "内存分配失败！" << endl;
-        else
-                head->next = NULL; //将头结点的 next 指针置为空
-        return head; //返回头结点指针
+	// 新建一个头结点
+	Node* head = new Node;
+	// 判断内存有没有分配失败
+	if (head == NULL)
+	{
+		cout << "内存分配失败！" << endl;
+	}
+	// 空链表：头结点后面暂时没有别的结点
+	head->next = NULL;
+	return head;
 }
 
-/*函数功能： 采用头插法创建一个通讯录链表
-* 函数形参： 通讯录链表头指针 Node* head，联系人信息 Contact data
-* 函数返回值： 创建成功返回 true,否则返回 false，bool 类型
-*/
-bool CreateAddressBookHead(Node* head, Contact data)
+// 函数2：尾插法添加联系人（加到链表最后面）
+// head：头结点，data：要添加的联系人信息
+bool AddContactTail(Node* head, Contact data)
 {
-        Node* node = new Node; //创建一个新的结点
-        if (node == NULL) //判断是否创建成功
-        {
-                cout << "内存分配失败！" << endl;
-                return false; //创建失败返回 false
-        }
-        node->data = data; //将联系人信息赋值给新结点
-        node->next = head->next; //将新结点的 next 指针指向头结点的下一个结点
-        head->next = node; //将头结点的 next 指针指向新结点
-        return true; //创建成功返回 true
+	// p用来找最后一个结点，先从head开始
+	Node* p = head;
+	// 循环，找到最后一个结点（next是NULL的结点）
+	while (p->next != NULL)
+	{
+		p = p->next;
+	}
+	// 新建结点，存新联系人
+	Node* newNode = new Node;
+	if (newNode == NULL)
+	{
+		cout << "内存分配失败！" << endl;
+		return false;
+	}
+	// 把传进来的联系人信息放进新结点
+	newNode->data = data;
+	// 新结点是最后一个，后面没人了
+	newNode->next = NULL;
+	// 原来最后一个结点接上这个新结点
+	p->next = newNode;
+	return true;
 }
 
-/*函数功能： 采用尾插法创建一个通讯录链表
-* 函数形参： 通讯录链表头指针 Node* head，联系人信息 Contact data
-* 函数返回值： 创建成功返回 true,否则返回 false，bool 类型
-*/
-bool CreateAddressBookTail(Node* head, Contact data)
-{
-        static Node* tail = head; //定义一个尾指针，初始指向头结点
-        Node* node = new Node; //创建一个新的结点
-        if (node == NULL) //判断是否创建成功
-        {
-                cout << "内存分配失败！" << endl;
-                return false; //创建失败返回 false
-        }
-        node->data = data; //将联系人信息赋值给新结点
-        node->next = NULL; //将新结点的 next 指针置为空
-        tail->next = node; //将尾结点的 next 指针指向新结点
-        tail = node; //将尾指针指向新结点
-        return true; //创建成功返回 true
-}
-
-/*函数功能： 输入单个联系人信息
-* 函数形参： 无
-* 函数返回值： 返回联系人信息，Contact 类型
-*/
+// 函数3：输入一个联系人信息，返回这个联系人
 Contact InputContact()
 {
-        Contact data;
-        //cout << "请输入联系人姓名： " << endl;
-        cin >> data.name;
-        //cout << "请输入联系人电话： " << endl;
-        cin >> data.phone;
-        //out << "请输入联系人生日（年 月 日）： " << endl;
-        cin >> data.birthday.year >> data.birthday.month >> data.birthday.day;
-        data.age = 2026 - data.birthday.year; //计算年龄
-        return data;
+	Contact c;
+	cout << "请输入姓名：";
+	cin >> c.name;
+	cout << "请输入电话：";
+	cin >> c.phone;
+	cout << "请输入生日 年 月 日：";
+	cin >> c.birthday.year >> c.birthday.month >> c.birthday.day;
+	// 自动算年龄
+	c.age = 2026 - c.birthday.year;
+	return c;
 }
 
-/*函数功能： 输出单个联系人信息
-* 函数形参： 联系人信息 Contact data
-* 函数返回值： 无，void 类型
-*/
-void OutputContact(Contact data)
+// 函数4：打印单个联系人信息
+void OutputContact(Contact c)
 {
-        cout << "姓名： " << data.name << endl;
-        cout << "电话： " << data.phone << endl;
-        cout << "生日： " << data.birthday.year << "年" << data.birthday.month << "月" <<
-data.birthday.day << "日" << endl;
-        cout << "年龄： " << data.age << endl;
+	cout << "姓名：" << c.name << "  电话：" << c.phone
+		 << "  生日：" << c.birthday.year << "-" << c.birthday.month << "-" << c.birthday.day
+		 << "  年龄：" << c.age << endl;
 }
 
-/*函数功能： 输出通讯录中所有联系人信息
-* 函数形参： 通讯录链表头指针 Node* head
-* 函数返回值： 无，void 类型
-*/
-void OutputAddressBook(Node* head)
+// 函数5：显示通讯录里所有联系人
+void ShowAll(Node* head)
 {
-        Node* node = head->next;
-        while (node)
-        {
-                OutputContact(node->data);
-                node = node->next;
-                }
+	// p从第一个真正的联系人开始（head是头结点，不存数据）
+	Node* p = head->next;
+	// 如果p是空，说明一个联系人都没有
+	if (p == NULL)
+	{
+		cout << "通讯录为空！" << endl;
+		return;
+	}
+	cout << "\n====所有联系人====" << endl;
+	// 一直往后走，直到p等于NULL
+	while (p != NULL)
+	{
+		OutputContact(p->data);
+		p = p->next;
+	}
 }
 
-/*函数功能： 按姓名查找通讯录中指定联系人信息
-* 函数形参： 通讯录链表头指针 Node* head，联系人姓名 char name[]
-* 函数返回值： 查找成功，返回地址，否则返回空，Node*类型
-*/
-Node* SearchContactByName(Node* head, char* name)
+// 函数6：按姓名查找联系人，找到返回结点地址，找不到返回NULL
+Node* SearchByName(Node* head, char* name)
 {
-        Node* node = head->next;
-        while (node)
-        {
-                if(strcmp(node->data.name, name) == 0)
-                        return node; //查找成功，返回结点地址
-                node = node->next;
-        }
-        return NULL; //查找失败，返回空
+	Node* p = head->next;
+	while (p != NULL)
+	{
+		// strcmp：对比两个字符串，一样就返回0
+		if (strcmp(p->data.name, name) == 0)
+		{
+			return p;
+		}
+		p = p->next;
+	}
+	return NULL;
 }
 
-/*函数功能： 按电话查找通讯录中指定联系人信息
-* 函数形参： 通讯录链表头指针 Node* head，联系人电话 char phone[]
-* 函数返回值： 查找成功，返回地址，否则返回空，Node*类型
-*/
-Node* SearchContactByPhone(Node* head, char* phone)
+// 函数7：按电话查找联系人
+Node* SearchByPhone(Node* head, char* phone)
 {
-        Node* node = head->next;
-        while (node)
-        {
-                if (strcmp(node->data.phone, phone) == 0)
-                        return node; //查找成功，返回结点地址
-                node = node->next;
-        }
-        return NULL; //查找失败，返回空
+	Node* p = head->next;
+	while (p != NULL)
+	{
+		if (strcmp(p->data.phone, phone) == 0)
+		{
+			return p;
+		}
+		p = p->next;
+	}
+	return NULL;
 }
 
-/*函数功能： 在指定联系人的后面插入一个新的联系人
-* 函数形参： 通讯录链表头指针 Node* head，指定联系人地址 Node* target，联系人信息 Contact data
-* 函数返回值： 插入成功，返回 true，否则返回 false，bool 类型
-*/
-bool InsertContactAfter(Node* head, Node* target, Contact data)
+// 函数8：找目标结点的前一个结点（删除的时候必须用）
+Node* GetPreNode(Node* head, Node* target)
 {
-        Node* node = new Node; //创建一个新的结点
-        if (node)
-        {
-                node->data = data;  //数据域赋值
-                node->next = target->next;  //指针域赋值
-                target->next = node; //将指定结点的 next 指针指向新结点
-                return true; //插入成功，返回 true
-        }
-        return false;
+	Node* p = head;
+	while (p->next != NULL)
+	{
+		if (p->next == target)
+		{
+			return p;
+		}
+		p = p->next;
+	}
+	return NULL;
 }
 
-/*函数功能： 查找指定联系人的前驱结点
-* 函数形参： 通讯录链表头指针 Node* head，指定联系人地址 Node* target
-* 函数返回值： 查找成功，返回前驱，否则返回空，Node*类型
-*/
-Node* SearchPreNode(Node* head, Node* target)
-{
-        for(Node* pre = head;pre->next != NULL; pre = pre->next)
-                if(pre->next == target)
-                        return pre; //查找成功，返回前驱结点地址
-        return NULL; //查找失败，返回空
-}
-
-/*函数功能： 在指定联系人的前面插入一个新的联系人
-* 函数形参： 通讯录链表头指针 Node* head，指定联系人地址 Node* target，联系人信息 Contact data
-* 函数返回值： 插入成功，返回 true，否则返回 false，bool 类型
-*/
-bool InsertContactBefore(Node* head, Node* target, Contact data)
-{
-        Node* pre = SearchPreNode(head, target); //查找指定联系人的前驱结点
-        if (pre)  //查找成功
-        {
-                Node* node = new Node; //创建一个新的结点
-                if (node)
-                {
-                        node->data = data;  //数据域赋值
-                        node->next = target;  //指针域赋值
-                        pre->next = node; //将前驱结点的 next 指针指向新结点
-                        return true; //插入成功，返回 true
-                }
-        }
-        return false; //插入失败，返回 false
-}
-
-/*函数功能： 删除指定联系人
-* 函数形参： 通讯录链表头指针 Node* head，指定联系人 Node* target
-* 函数返回值： 删除成功，返回 true，否则返回 false，bool 类型
-*/
+// 函数9：删除指定联系人
 bool DeleteContact(Node* head, Node* target)
 {
-        Node* pre = SearchPreNode(head, target); //查找指定联系人的前驱结点
-        if (pre)  //查找成功
-        {
-                pre->next = target->next; //将前驱结点的 next 指针指向指定结点的下一个结点
-                delete target; //释放指定结点的内存空间
-                return true; //删除成功，返回 true
-        }
-        return false; //删除失败，返回 false
+	// 拿到目标的前一个结点
+	Node* pre = GetPreNode(head, target);
+	if (pre == NULL)
+		return false;
+	// 前一个结点直接跳过要删的结点，连到下一个
+	pre->next = target->next;
+	// 释放内存，防止内存泄漏
+	delete target;
+	return true;
 }
 
-/*函数功能： 删除指定联系人的后继
-* 函数形参： 通讯录链表头指针 Node* head，指定联系人 Node* target
-* 函数返回值： 删除成功，返回 true，否则返回 false，bool 类型
-*/
-bool DeleteContactNext(Node* head, Node* target)
+// 函数10：修改联系人信息
+bool ModifyContact(Node* target)
 {
-        if (target->next)  //判断指定结点是否有后继结点
-        {
-                Node* node = target->next; //保存指定结点的后继结点
-                target->next = node->next; //将指定结点的 next 指针指向后继结点的下一个结点
-                delete node; //释放后继结点的内存空间
-                return true; //删除成功，返回 true
-        }
-        return false; //删除失败，返回 false
+	if (target == NULL)
+		return false;
+	cout << "请输入新的信息：" << endl;
+	Contact newc = InputContact();
+	// 直接覆盖原来的数据
+	target->data = newc;
+	return true;
 }
 
-/*函数功能： 打印用户选择菜单
-* 函数形参： 无
-* 函数返回值： 返回用户的选择，int 类型
-*/
+// 函数11：打印菜单，返回用户选择的数字
 int PrintMenu()
 {
-        int choice;
-        cout << "========================================================通讯录管理程序========================================================" << endl;
-        cout << "1. 添加联系人" << endl;
-        cout << "2. 删除联系人" << endl;
-        cout << "3. 查找联系人" << endl;
-        cout << "4. 修改联系人" << endl;
-        cout << "5. 显示所有联系人" << endl;
-        cout << "6. 退出程序" << endl;
-        cout << "==========================================================================================================================" << endl;
-        cout << "请输入您的选择（1-6）： " << endl;
-        cin >> choice;
-        return choice;
+	int op;
+	cout << "\n====通讯录管理====" << endl;
+	cout << "1 添加联系人" << endl;
+	cout << "2 删除联系人" << endl;
+	cout << "3 查找联系人" << endl;
+	cout << "4 修改联系人" << endl;
+	cout << "5 显示全部" << endl;
+	cout << "6 退出" << endl;
+	cout << "请选择：";
+	cin >> op;
+	return op;
 }
 
 int main()
 {
+  //主函数进行测试
+	// 先创建空通讯录
+	Node* head = InitAddressBook();
+	int choice;
+	// 用来临时存输入的姓名/电话
+	char buf[50];
 
-        return 0;
+	// 死循环，一直显示菜单，直到选6退出
+	while (true)
+	{
+		choice = PrintMenu();
+		switch (choice)
+		{
+		case 1:
+		{
+			// 输入一个联系人
+			Contact c = InputContact();
+			// 添加到链表尾部
+			AddContactTail(head, c);
+			cout << "添加成功！" << endl;
+			break;
+		}
+		case 2:
+		{
+			cout << "输入要删除的姓名：";
+			cin >> buf;
+			// 先查找这个名字
+			Node* p = SearchByName(head, buf);
+			if (p != NULL)
+			{
+				DeleteContact(head, p);
+				cout << "删除成功！" << endl;
+			}
+			else
+			{
+				cout << "找不到这个联系人！" << endl;
+			}
+			break;
+		}
+		case 3:
+		{
+			int sub;
+			cout << "1按姓名查找  2按电话查找：";
+			cin >> sub;
+			if (sub == 1)
+			{
+				cout << "输入姓名：";
+				cin >> buf;
+				Node* p = SearchByName(head, buf);
+				if (p)
+				{
+					OutputContact(p->data);
+				}
+				else
+				{
+					cout << "未找到" << endl;
+				}
+			}
+			else if (sub == 2)
+			{
+				cout << "输入电话：";
+				cin >> buf;
+				Node* p = SearchByPhone(head, buf);
+				if (p)
+				{
+					OutputContact(p->data);
+				}
+				else
+				{
+					cout << "未找到" << endl;
+				}
+			}
+			break;
+		}
+		case 4:
+		{
+			cout << "输入要修改的姓名：";
+			cin >> buf;
+			Node* p = SearchByName(head, buf);
+			if (p)
+			{
+				ModifyContact(p);
+				cout << "修改完成！" << endl;
+			}
+			else
+			{
+				cout << "找不到联系人！" << endl;
+			}
+			break;
+		}
+		case 5:
+			ShowAll(head);
+			break;
+		case 6:
+			cout << "程序退出" << endl;
+			return 0;
+		default:
+			cout << "输入错误！请输入1~6" << endl;
+		}
+	}
 
+  return 0;
 }
